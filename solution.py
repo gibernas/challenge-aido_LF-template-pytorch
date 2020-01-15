@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
 import numpy as np
-
+import time
 from aido_schemas import EpisodeStart, protocol_agent_duckiebot1, PWMCommands, Duckiebot1Commands, LEDSCommands, RGB, \
     wrap_direct, Context, Duckiebot1Observations, JPGImage, logger
 
-from model import DDPG
-from wrappers import DTPytorchWrapper
+from model import Model
+from wrappers import DTPytorchWrapper, SteeringToWheelVelWrapper
 from PIL import Image
 import io
 
+from controller import SteeringToWheelVelWrapper, lane_controller
 
-class PytorchRLTemplateAgent:
+
+class PytorchAgent:
     def __init__(self, load_model=False, model_path=None):
-        logger.info('PytorchRLTemplateAgent init')
+        logger.info('PytorchAgent init')
         self.preprocessor = DTPytorchWrapper()
 
-        self.model = DDPG(state_dim=self.preprocessor.shape, action_dim=2, max_action=1, net_type="cnn")
+        self.model = Model()
         self.current_image = np.zeros((640, 480, 3))
 
-        if load_model:
-            logger.info('PytorchRLTemplateAgent loading models')
-            fp = model_path if model_path else "model"
-            self.model.load(fp, "models", for_inference=True)
-        logger.info('PytorchRLTemplateAgent init complete')
+        self.steering_to_wheel_wrapper = SteeringToWheelVelWrapper()
+
+        self.controller = lane_controller()
+        self.dt = None
+        self.last_t = None
+
+        logger.info('PytorchAgent init complete')
 
     def init(self, context: Context):
         context.info('init()')
@@ -39,9 +43,13 @@ class PytorchRLTemplateAgent:
         self.current_image = self.preprocessor.preprocess(obs)
 
     def compute_action(self, observation):
-        #if observation.shape != self.preprocessor.transposed_shape:
-        #    observation = self.preprocessor.preprocess(observation)
-        action = self.model.predict(observation)
+        pose = self.model.predict(observation).detach().numpy()[0]
+        time_now = time.time()
+        if self.last_t is not None:
+            self.dt = time_now - self.last_t
+        v, omega = self.controller.compute_control_action(pose[0], pose[1], dt=self.dt)
+        action = self.steering_to_wheel_wrapper.action(np.array([v, omega]))
+        self.last_t = time_now
         return action.astype(float)
 
     def on_received_get_commands(self, context: Context):
@@ -69,8 +77,9 @@ def jpg2rgb(image_data: bytes) -> np.ndarray:
     assert data.dtype == np.uint8
     return data
 
+
 def main():
-    node = PytorchRLTemplateAgent() 
+    node = PytorchAgent()
     protocol = protocol_agent_duckiebot1
     wrap_direct(node=node, protocol=protocol)
 
