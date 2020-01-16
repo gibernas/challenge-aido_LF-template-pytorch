@@ -2,9 +2,10 @@ import torch
 from torchvision import transforms
 from PIL import Image
 
-from utils.utils import TransCropHorizon
-
+from utils import TransCropHorizon
+from models import VanillaCNN
 device = torch.device("cpu")
+from aido_schemas import  logger
 
 
 class Model(object):
@@ -18,7 +19,9 @@ class Model(object):
                                                     transforms.Grayscale(num_output_channels=1),
                                                     transforms.ToTensor()])
 
-        self.model = torch.load('whatevermodel', map_location=device)
+        model_name = 'VanillaCNN_1579009324.1649516_lr_0.0001_bs_16_dataset_sim_totepo_200_epo199_final.pt'
+        model_path = '/'.join(['models', model_name])
+        self.model = torch.load(model_path, map_location=torch.device('cpu'))
         self.model.double().to(device=device)
 
     def close(self):
@@ -26,9 +29,9 @@ class Model(object):
         pass
 
     def predict(self, images):
-        # just making sure the state has the correct format, otherwise the prediction doesn't work
-        images = self.transformsCustom(Image.fromarray(images))
+        images = self.transformsCustom(Image.fromarray(images.astype('uint8').T))
         images = images.double().to(device=device)
         images = images.unsqueeze(1)
         pose_estimates = self.model(images)
+
         return pose_estimates

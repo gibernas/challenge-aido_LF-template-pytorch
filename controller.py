@@ -1,5 +1,5 @@
 class Controller():
-    def __init__(self, parameters):
+    def __init__(self):
         self.parameters = {
             '~k_d': -3.5,
             '~k_theta': -1,
@@ -7,10 +7,17 @@ class Controller():
             '~k_Iphi': 0,
             '~v_bar': 0.22,
             'd_resolution': 0.05,
+            'phi_resolution': 0,
             '~omega_to_rad_per_s': 4.75,
             'integral_bounds': {
-                'phi': 1.2,
-                'd': 0.3
+                'phi': {
+                    'top': 1.2,
+                    'bot': -1.2
+                },
+                'd': {
+                    'top': 0.3,
+                    'bot': -0.3
+                }
             }
         }
         self.d_err = 0
@@ -43,7 +50,7 @@ class Controller():
         self.prev_d_err = d_err
         self.prev_phi_err = phi_err
 
-        return omega
+        return self.parameters['~v_bar'], omega
 
     def integrate_errors(self, d_err, phi_err, dt):
         self.d_I += d_err * dt

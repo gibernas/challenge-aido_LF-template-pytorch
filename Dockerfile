@@ -23,15 +23,19 @@ RUN pip install -r /workspace/requirements.txt
 # if you have more file use the COPY command to move them to the workspace
 COPY solution.py /workspace
 COPY models /workspace/models
-COPY model.py /workspace
+COPY models.py /workspace
 COPY wrappers.py /workspace
+COPY controller.py /workspace
+COPY utils.py /workspace
+COPY wrappers.py /workspace
+COPY submissionModel.py /workspace
 
 # we make the workspace our working directory
 WORKDIR /workspace
 
 ENV DISABLE_CONTRACTS=1
 
-RUN python -c "import solution; import wrappers; import model"
+RUN python -c "import solution; import wrappers; import models"
 
 # let's see what you've got there...
 CMD python solution.py

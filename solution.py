@@ -4,12 +4,12 @@ import time
 from aido_schemas import EpisodeStart, protocol_agent_duckiebot1, PWMCommands, Duckiebot1Commands, LEDSCommands, RGB, \
     wrap_direct, Context, Duckiebot1Observations, JPGImage, logger
 
-from model import Model
+from submissionModel import Model
 from wrappers import DTPytorchWrapper, SteeringToWheelVelWrapper
 from PIL import Image
 import io
 
-from controller import SteeringToWheelVelWrapper, lane_controller
+from controller import Controller
 
 
 class PytorchAgent:
@@ -22,7 +22,7 @@ class PytorchAgent:
 
         self.steering_to_wheel_wrapper = SteeringToWheelVelWrapper()
 
-        self.controller = lane_controller()
+        self.controller = Controller()
         self.dt = None
         self.last_t = None
 
@@ -48,7 +48,7 @@ class PytorchAgent:
         if self.last_t is not None:
             self.dt = time_now - self.last_t
         v, omega = self.controller.compute_control_action(pose[0], pose[1], dt=self.dt)
-        action = self.steering_to_wheel_wrapper.action(np.array([v, omega]))
+        action = self.steering_to_wheel_wrapper.convert(np.array([v, omega]))
         self.last_t = time_now
         return action.astype(float)
 
