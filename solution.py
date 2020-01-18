@@ -25,6 +25,7 @@ class PytorchAgent:
         self.controller = Controller()
         self.dt = None
         self.last_t = None
+        self.old_obs = None
 
         logger.info('PytorchAgent init complete')
 
@@ -40,16 +41,19 @@ class PytorchAgent:
     def on_received_observations(self, data: Duckiebot1Observations):
         camera: JPGImage = data.camera
         obs = jpg2rgb(camera.jpg_data)
-        self.current_image = self.preprocessor.preprocess(obs)
+        # self.current_image = self.preprocessor.preprocess(obs)
+        self.current_image = obs
 
     def compute_action(self, observation):
-        pose = self.model.predict(observation).detach().numpy()[0]
+        pose = self.model.predict(observation).detach().cpu().numpy()[0]
+        pose[1] *= 3.1415
         time_now = time.time()
         if self.last_t is not None:
             self.dt = time_now - self.last_t
         v, omega = self.controller.compute_control_action(pose[0], pose[1], dt=self.dt)
         action = self.steering_to_wheel_wrapper.convert(np.array([v, omega]))
         self.last_t = time_now
+        self.old_obs = observation
         return action.astype(float)
 
     def on_received_get_commands(self, context: Context):

@@ -1,9 +1,9 @@
 class Controller():
     def __init__(self):
         self.parameters = {
-            '~k_d': -3.5,
-            '~k_theta': -1,
-            '~k_Id': 1,
+            '~k_d': 3,
+            '~k_theta': 1.5,
+            '~k_Id': 0,
             '~k_Iphi': 0,
             '~v_bar': 0.22,
             'd_resolution': 0.05,
@@ -20,12 +20,9 @@ class Controller():
                 }
             }
         }
-        self.d_err = 0
-        self.phi_err = 0
+
         self.d_I = 0
         self.phi_I = 0
-        self.prev_d_err = 0
-        self.prev_phi_err = 0
 
     def compute_control_action(self, d_err, phi_err, dt):
 
@@ -38,17 +35,14 @@ class Controller():
                                           self.parameters['phi_resolution'])
 
         # Scale the parameters linear such that their real value is at 0.22m/s
-        omega = self.parameters['~k_d'] * (0.22 / self.parameters['~v_bar']) * self.d_err + \
-            self.parameters['~k_theta'] * (0.22 / self.parameters['~v_bar']) * self.phi_err
+        omega = self.parameters['~k_d'] * (0.22 / self.parameters['~v_bar']) * d_err + \
+            self.parameters['~k_theta'] * (0.22 / self.parameters['~v_bar']) * phi_err
 
         omega -= self.parameters['~k_Id'] * (0.22/self.parameters['~v_bar']) * self.d_I
         omega -= self.parameters['~k_Iphi'] * (0.22/self.parameters['~v_bar']) * self.phi_I
 
         # apply magic conversion factors
         omega = omega * self.parameters['~omega_to_rad_per_s']
-
-        self.prev_d_err = d_err
-        self.prev_phi_err = phi_err
 
         return self.parameters['~v_bar'], omega
 

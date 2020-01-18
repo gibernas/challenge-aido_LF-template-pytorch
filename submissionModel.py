@@ -5,7 +5,6 @@ from PIL import Image
 from utils import TransCropHorizon
 from models import VanillaCNN
 device = torch.device("cpu")
-from aido_schemas import  logger
 
 
 class Model(object):
@@ -19,18 +18,20 @@ class Model(object):
                                                     transforms.Grayscale(num_output_channels=1),
                                                     transforms.ToTensor()])
 
-        model_name = 'VanillaCNN_1579009324.1649516_lr_0.0001_bs_16_dataset_sim_totepo_200_epo199_final.pt'
+        model_name = 'SpectralDropoutCNN_1579294275.6305485_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
+        model_name = 'VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
         model_path = '/'.join(['models', model_name])
         self.model = torch.load(model_path, map_location=torch.device('cpu'))
-        self.model.double().to(device=device)
+        self.model.double().to(device=torch.device('cpu'))
 
     def close(self):
         # TODO: release resources
         pass
 
     def predict(self, images):
-        images = self.transformsCustom(Image.fromarray(images.astype('uint8').T))
-        images = images.double().to(device=device)
+        # images = self.transformsCustom(Image.fromarray(images.astype('uint8').T))
+        images = self.transformsCustom(Image.fromarray(images.astype('uint8')))
+        images = images.double().to(device=torch.device('cpu'))
         images = images.unsqueeze(1)
         pose_estimates = self.model(images)
 

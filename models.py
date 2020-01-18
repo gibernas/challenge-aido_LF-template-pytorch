@@ -138,7 +138,7 @@ class SpectralDropoutEasyCNN(nn.Module):
 
         # Name of the model
         self.name = 'SpectralDropoutCNN'
-        self.dev = dev
+        self.dev = torch.device('cpu')
 
         # Handle dimensions
         if as_gray:
@@ -170,9 +170,9 @@ class SpectralDropoutEasyCNN(nn.Module):
         self.lin3 = nn.Linear(256, 2)
 
     def forward(self, x):
-        out = to_spectral(x)
-        out = spectral_masking(out).to(device=self.dev)
-        out = to_spatial(out)
+        out = to_spectral(x.cpu())
+        out = spectral_masking(out).cpu()
+        out = to_spatial(out.cpu())
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
