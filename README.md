@@ -21,6 +21,4 @@ For submitting, please follow [the instructions available in the book][book].
 
 ## Description
 
-This is a template solution using PyTorch.
-
-[This code is documented here](https://docs.duckietown.org/DT19/AIDO/out/pytorch_template.html).
+This is a solution implementing a CNN for the relative pose estimate and a simple PI controller for the control law.
