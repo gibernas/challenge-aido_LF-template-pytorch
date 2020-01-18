@@ -29,7 +29,6 @@ class Model(object):
         pass
 
     def predict(self, images):
-        # images = self.transformsCustom(Image.fromarray(images.astype('uint8').T))
         images = self.transformsCustom(Image.fromarray(images.astype('uint8')))
         images = images.double().to(device=torch.device('cpu'))
         images = images.unsqueeze(1)

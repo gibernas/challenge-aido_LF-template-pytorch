@@ -2,8 +2,8 @@ import argparse
 import numpy as np
 import torch
 from PIL import Image
-from scipy.fftpack import dct, idct
 import torch_dct as dct
+
 
 class ToCustomTensor(object):
     """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
@@ -98,71 +98,6 @@ class TransCropHorizon(object):
         return image
 
 
-class FilterWeights:
-    def __init__(self, n):
-
-        self.m = int(n)
-        self.n = n**2
-        self.f_tau = np.zeros((self.n, self.m, self.m))
-        self.f_tau_inv = np.zeros((self.n, self.m, self.m))
-
-        self.compute_weights()
-        self.compute_inverse_weights()
-
-    def get_alpha(self, k):
-        if k == 1:
-            alpha = np.sqrt(1 / self.n)
-        else:
-            alpha = np.sqrt(2 / self.n)
-        return alpha
-
-    def get_beta(self, i, k):
-        beta = np.cos((np.pi * (2 * i - 1) * (k - 1)) / (2 * self.n))
-        return beta
-
-    def get_v_prime(self, i):
-        v_prime = np.zeros((self.m, 1))
-        for j in range(self.m):
-            alpha = self.get_alpha(j)
-            beta = self.get_beta(i, j)
-            v_prime[j] = alpha * beta
-        return v_prime
-
-    def get_v_hat_prime(self, i):
-        v_hat = np.zeros((self.m, 1))
-        for j in range(self.m):
-            alpha = self.get_alpha(i)
-            beta = self.get_beta(j, i)
-            v_hat[j] = alpha * beta
-        return v_hat
-
-    def get_v_i(self, i, hat=False):
-        # Hat is for the inverse
-        p = int(np.ceil(i / self.m))
-        q_p = i - self.m * np.floor(i / self.m)
-        if q_p:
-            q = int(q_p)
-        else:
-            q = self.m
-        if not hat:
-            v_p_i = self.get_v_prime(p)
-            v_q_i = self.get_v_prime(q)
-        else:
-            v_p_i = self.get_v_hat_prime(p)
-            v_q_i = self.get_v_hat_prime(q)
-
-        v_i = np.matmul(v_p_i, np.transpose(v_q_i))
-        return v_i
-
-    def compute_weights(self):
-        for i in range(self.n):
-            self.f_tau[i, :, :] = self.get_v_i(i, hat=False)
-
-    def compute_inverse_weights(self):
-        for i in range(self.n):
-            self.f_tau_inv[i, :, :] = self.get_v_i(i, hat=True)
-
-
 class SpectralTransform(torch.nn.Conv2d):
     pass
 
@@ -171,83 +106,12 @@ class SpectralTransformInverse(torch.nn.Conv2d):
     pass
 
 
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('SpectralTransform') != -1:
-        spec_filter = FilterWeights(m.kernel_size[0])  # Kernel is square
-        print('Shape of filter')
-        print(spec_filter.f_tau.shape)
-        print("shape of weights")
-        print(m.weight.shape)
-        m.weight = torch.nn.Parameter(torch.from_numpy(spec_filter.f_tau).expand(m.weight.size()),
-                                      requires_grad=False)
-    elif classname.find('SpectralTransformInverse') != -1:
-        spec_filter = FilterWeights(m.kernel_size[0])  # Kernel is square
-        m.weight = torch.nn.Parameter(torch.from_numpy(spec_filter.f_tau_inv).expand(m.weight.size()),
-                                      requires_grad=False)
-
-        # TODO make sure the weights do not change!!
-
-
-def spectral_masking(T):
-    T = T.detach().cpu().numpy()
-    threshold = -0.1
-    p_keep = 1
-    mask_tresh = np.abs(T) > np.max(T) ** threshold # questi li tengo, exp treshold bsc log scale
-    mask_dropout = np.random.random_sample(T.shape) < p_keep # questi li tengo
-    mask = mask_tresh * mask_dropout
-    T[~mask] = 0
-    return torch.from_numpy(T)
-
-
-class Reshaper:
-    """Reshape tensors on hypercolumn format
-
-    Expect input to be ordered as BxCxHxW and outputs a BxSCxSCxHW where SC = sqrt(C)"""
-    def __init__(self, tensor):
-        # TODO: fails with batch size!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.original_shape = tensor.shape
-        self.batch_size = self.original_shape[0]
-        self.n_channels = self.original_shape[1]
-
-        # Check if we can build the 2D filter
-        assert self.n_channels == int(np.sqrt(self.n_channels)) ** 2, 'The number of channels is not a square number'
-        self.m = int(np.sqrt(self.n_channels))
-
-    def reshape_hypercolumns(self, tensor):
-        # Flatten h and w to get what will be the third dimension w*h
-        tensor = torch.flatten(tensor, start_dim=2, end_dim=3)
-        # Reshape in size sqrt(n) T sqrt(n)
-        tensor = tensor.reshape(self.batch_size, self.m, self.m, -1)
-
-        return tensor
-
-    def reshape_back_hypercolumns(self, tensor):
-        # Flatten sqrt(n) x sqrt(n) to get what will be the third dimension (channels)
-        tensor = torch.flatten(tensor, start_dim=1, end_dim=2)
-        # Reshape w*h to get back h x w
-        tensor = tensor.reshape(self.original_shape)
-
-        return tensor
-
-
 def to_spectral(x):
     return dct.dct_2d(x)
-    # for b in x:
-    #     for c in b:
-    #         # c  = torch.from_numpy(dct(dct(c.T.detach().cpu().numpy(), norm='ortho').T, norm='ortho'))
-    #         inp = c.detach().cpu().numpy()
-    #         c = torch.from_numpy(dct.dct2(inp))
-    # return x
 
 
 def to_spatial(x):
     return dct.idct_2d(x)
-    # for b in x:
-    #     for c in b:
-    #         # c = torch.from_numpy(idct(idct(c.T.detach().cpu().numpy(), norm='ortho').T, norm='ortho'))
-    #         c = torch.from_numpy(dct.idct2(c.detach().cpu().numpy()))
-    # return x
 
 
 def get_parser():
