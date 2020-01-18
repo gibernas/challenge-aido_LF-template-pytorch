@@ -21,4 +21,4 @@ For submitting, please follow [the instructions available in the book][book].
 
 ## Description
 
-This is a solution implementing a CNN for the relative pose estimate and a simple PI controller for the control law.
+This is a solution implementing a CNN for the relative pose estimate and a simple PI controller for the control law. Make sure to put the trained models in a folder called `models`. You need to change the name of the loaded model inside `submissionModel.py`.
