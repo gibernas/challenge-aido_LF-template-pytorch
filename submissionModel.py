@@ -3,7 +3,7 @@ from torchvision import transforms
 from PIL import Image
 
 from utils import TransCropHorizon
-from models import VanillaCNN
+from models import VanillaCNN, SpectralDropoutEasyCNN
 device = torch.device("cpu")
 
 
