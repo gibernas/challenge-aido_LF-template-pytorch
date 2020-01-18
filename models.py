@@ -101,6 +101,7 @@ class SpectralDropoutCNN(nn.Module):
         self.lin2 = nn.Linear(512, 256)
         self.drop_out_lin3 = nn.Dropout(0.1)
         self.lin3 = nn.Linear(256, 2)
+        self.dropout_layer = nn.Dropout2d(p=0.2)
 
     def forward(self, x):
         out = self.layer1(x)
@@ -113,7 +114,6 @@ class SpectralDropoutCNN(nn.Module):
         out_hypermatrix = self.spectral_tf(out_hypermatrix)
         print("shape after sp tf")
         print(out_hypermatrix.shape)
-        # out_hypermatrix = spectral_masking(out_hypermatrix)
         out_hypermatrix = self.inv_spectral_tf(out_hypermatrix)
         print("shape after sp tf inv")
         print(out_hypermatrix.shape)
@@ -171,7 +171,7 @@ class SpectralDropoutEasyCNN(nn.Module):
 
     def forward(self, x):
         out = to_spectral(x.cpu())
-        out = spectral_masking(out).cpu()
+        out = self.dropout_layer(out)
         out = to_spatial(out.cpu())
         out = self.layer1(out)
         out = self.layer2(out)

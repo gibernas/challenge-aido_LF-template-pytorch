@@ -6,3 +6,4 @@ duckietown-challenges-daffy>=5.0.7
 pillow
 torch
 torchvision
+torch-dct

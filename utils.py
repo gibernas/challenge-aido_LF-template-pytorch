@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from PIL import Image
 from scipy.fftpack import dct, idct
+import torch_dct as dct
 
 class ToCustomTensor(object):
     """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
@@ -231,17 +232,22 @@ class Reshaper:
 
 
 def to_spectral(x):
-    for b in x:
-        for c in b:
-            c = torch.from_numpy(dct(dct(c.T.detach().cpu().numpy(), norm='ortho').T, norm='ortho'))
-    return x
+    return dct.dct_2d(x)
+    # for b in x:
+    #     for c in b:
+    #         # c  = torch.from_numpy(dct(dct(c.T.detach().cpu().numpy(), norm='ortho').T, norm='ortho'))
+    #         inp = c.detach().cpu().numpy()
+    #         c = torch.from_numpy(dct.dct2(inp))
+    # return x
 
 
 def to_spatial(x):
-    for b in x:
-        for c in b:
-            c = torch.from_numpy(idct(idct(c.T.detach().cpu().numpy(), norm='ortho').T, norm='ortho'))
-    return x
+    return dct.idct_2d(x)
+    # for b in x:
+    #     for c in b:
+    #         # c = torch.from_numpy(idct(idct(c.T.detach().cpu().numpy(), norm='ortho').T, norm='ortho'))
+    #         c = torch.from_numpy(dct.idct2(c.detach().cpu().numpy()))
+    # return x
 
 
 def get_parser():
