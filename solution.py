@@ -9,6 +9,9 @@ from wrappers import DTPytorchWrapper, SteeringToWheelVelWrapper
 from PIL import Image
 import io
 
+from action_invariance import TrimWrapper
+import cv2
+
 from controller import Controller
 
 
@@ -27,6 +30,18 @@ class PytorchAgent:
         self.last_t = None
         self.old_obs = None
 
+        ################################################################################################################
+        # Begin of trim wrapper code                                                                                   #
+        ################################################################################################################
+        # Vars needed for trim estimation
+        self.last_img = None
+        self.current_img = None
+        self.log_ = []
+        self.obs_counter = 0
+        self.update_countdown = 50
+        self.trim_wrapper = TrimWrapper()
+        ################################################################################################################
+
         logger.info('PytorchAgent init complete')
 
     def init(self, context: Context):
@@ -41,6 +56,13 @@ class PytorchAgent:
     def on_received_observations(self, data: Duckiebot1Observations):
         camera: JPGImage = data.camera
         obs = jpg2rgb(camera.jpg_data)
+
+        ################################################################################################################
+        # Begin of trim wrapper code                                                                                   #
+        ################################################################################################################
+        self.current_img = cv2.cvtColor(cv2.resize(obs, (80, 60)), cv2.COLOR_BGR2GRAY)
+        ################################################################################################################
+
         # self.current_image = self.preprocessor.preprocess(obs)
         self.current_image = obs
 
@@ -58,6 +80,24 @@ class PytorchAgent:
 
     def on_received_get_commands(self, context: Context):
         pwm_left, pwm_right = self.compute_action(self.current_image)
+
+        ################################################################################################################
+        # Begin of trim wrapper code                                                                                   #
+        ################################################################################################################
+        if self.last_img is not None:
+            delta_phi = self.trim_wrapper.get_delta_phi(self.last_img, self.current_img)
+
+            # Ignore first frames as the duckiebot is speeding up
+            if self.obs_counter > 30:
+                self.log_.append([delta_phi, pwm_left, pwm_right])
+                self.update_countdown -= 1
+                if not self.update_countdown:
+                    self.trim_est = self.trim_wrapper.estimate_trim(self.log_)
+                    self.update_countdown = 30
+
+        pwm_left, pwm_right = self.trim_wrapper.undistort(pwm_left, pwm_right)
+        self.last_img = self.current_img
+        ################################################################################################################
 
         pwm_left = float(np.clip(pwm_left, -1, +1))
         pwm_right = float(np.clip(pwm_right, -1, +1))
