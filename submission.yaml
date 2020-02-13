@@ -3,7 +3,7 @@
 
 # conventions + format
 protocol: aido2_db18_agent-z2
-user-label: "challenge-aido_LF-SpectralDropoutCNN"
+user-label: "04_aV"
 user-payload: {}
 description: |
-    Pose estimate from CNN and simple PID controller afterwards.
+    aV
