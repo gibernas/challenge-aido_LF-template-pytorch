@@ -30,6 +30,14 @@ COPY utils.py /workspace
 COPY wrappers.py /workspace
 COPY submissionModel.py /workspace
 
+########################################################################################################################
+# Begin of trim wrapper code                                                                                           #
+########################################################################################################################
+COPY action_invariance.py /workspace
+COPY model.py /workspace
+COPY ConvSkip_tmp.pth /workspace
+########################################################################################################################
+
 # we make the workspace our working directory
 WORKDIR /workspace
 
