@@ -22,7 +22,6 @@ RUN pip install -r /workspace/requirements.txt
 # let's copy all our solution files to our workspace
 # if you have more file use the COPY command to move them to the workspace
 COPY solution.py /workspace
-COPY models /workspace/models
 COPY models.py /workspace
 COPY wrappers.py /workspace
 COPY controller.py /workspace
@@ -36,6 +35,7 @@ COPY submissionModel.py /workspace
 COPY action_invariance.py /workspace
 COPY model.py /workspace
 COPY ConvSkip_tmp.pth /workspace
+COPY networks.py /workspace
 ########################################################################################################################
 
 # we make the workspace our working directory

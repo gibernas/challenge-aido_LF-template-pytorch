@@ -9,10 +9,14 @@ from wrappers import DTPytorchWrapper, SteeringToWheelVelWrapper
 from PIL import Image
 import io
 
+from controller import Controller
+
+########################################################################################################################
+# Begin of trim transform code                                                                                        #
+########################################################################################################################
 from action_invariance import TrimWrapper
 import cv2
-
-from controller import Controller
+########################################################################################################################
 
 
 class PytorchAgent:
@@ -60,7 +64,7 @@ class PytorchAgent:
         ################################################################################################################
         # Begin of trim wrapper code                                                                                   #
         ################################################################################################################
-        self.current_img = cv2.cvtColor(cv2.resize(obs, (80, 60)), cv2.COLOR_BGR2GRAY)
+        self.current_img = cv2.cvtColor(cv2.resize(self.current_image, (80, 60)), cv2.COLOR_BGR2GRAY)
         ################################################################################################################
 
         # self.current_image = self.preprocessor.preprocess(obs)

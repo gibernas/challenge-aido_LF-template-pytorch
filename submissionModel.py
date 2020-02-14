@@ -3,7 +3,7 @@ from torchvision import transforms
 from PIL import Image
 
 from utils import TransCropHorizon
-from models import VanillaCNN, SpectralDropoutEasyCNN
+from models import VanillaCNN # , SpectralDropoutEasyCNN
 device = torch.device("cpu")
 
 
@@ -18,8 +18,8 @@ class Model(object):
                                                     transforms.Grayscale(num_output_channels=1),
                                                     transforms.ToTensor()])
 
-        model_name = 'SpectralDropoutCNN_1579294275.6305485_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
-        # model_name = 'VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
+        # model_name = 'SpectralDropoutCNN_1579294275.6305485_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
+        model_name = 'VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
         model_path = '/'.join(['models', model_name])
         self.model = torch.load(model_path, map_location=torch.device('cpu'))
         self.model.double().to(device=torch.device('cpu'))
