@@ -37,6 +37,7 @@ COPY action_invariance.py /workspace
 COPY model.py /workspace
 COPY ConvSkip_tmp.pth /workspace
 COPY networks.py /workspace
+COPY latest_net_G.pth /workspace
 ########################################################################################################################
 
 # we make the workspace our working directory
