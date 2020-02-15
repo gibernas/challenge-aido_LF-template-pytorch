@@ -26,6 +26,12 @@ COPY wrappers.py /workspace
 COPY controller.py /workspace
 COPY utils.py /workspace
 COPY submissionModel.py /workspace
+COPY models.py /workspace
+COPY networks.py /workspace
+COPY action_invariance.py /workspace
+COPY latest_net_G.pth /workspace
+COPY VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt /workspace
+COPY ConvSkip.pth /workspace
 
 # we make the workspace our working directory
 WORKDIR /workspace

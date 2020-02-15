@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import SpectralTransform, SpectralTransformInverse, spectral_masking, Reshaper, to_spatial, to_spectral
+from utils import SpectralTransform, SpectralTransformInverse, to_spatial, to_spectral
 
 
 class VanillaCNN(nn.Module):
