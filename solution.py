@@ -61,14 +61,16 @@ class PytorchAgent:
         camera: JPGImage = data.camera
         obs = jpg2rgb(camera.jpg_data)
 
+        self.current_image = obs
+
         ################################################################################################################
         # Begin of trim wrapper code                                                                                   #
         ################################################################################################################
-        self.current_img = cv2.cvtColor(cv2.resize(self.current_image, (80, 60)), cv2.COLOR_BGR2GRAY)
+        self.current_img_trim = cv2.cvtColor(cv2.resize(self.current_image, (80, 60)), cv2.COLOR_BGR2GRAY)
         ################################################################################################################
 
         # self.current_image = self.preprocessor.preprocess(obs)
-        self.current_image = obs
+
 
     def compute_action(self, observation):
         pose = self.model.predict(observation).detach().cpu().numpy()[0]
@@ -89,7 +91,7 @@ class PytorchAgent:
         # Begin of trim wrapper code                                                                                   #
         ################################################################################################################
         if self.last_img is not None:
-            delta_phi = self.trim_wrapper.get_delta_phi(self.last_img, self.current_img)
+            delta_phi = self.trim_wrapper.get_delta_phi(self.last_img, self.current_img_trim)
 
             # Ignore first frames as the duckiebot is speeding up
             if self.obs_counter > 30:
@@ -100,7 +102,7 @@ class PytorchAgent:
                     self.update_countdown = 30
 
         pwm_left, pwm_right = self.trim_wrapper.undistort_action(pwm_left, pwm_right)
-        self.last_img = self.current_img
+        self.last_img = self.current_img_trim
         ################################################################################################################
         ################################################################################################################
 

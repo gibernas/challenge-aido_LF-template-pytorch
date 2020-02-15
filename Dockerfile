@@ -28,6 +28,7 @@ COPY controller.py /workspace
 COPY utils.py /workspace
 COPY wrappers.py /workspace
 COPY submissionModel.py /workspace
+COPY VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt /workspace
 
 ########################################################################################################################
 # Begin of trim wrapper code                                                                                           #
