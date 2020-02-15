@@ -20,7 +20,7 @@ class Model(object):
 
         # model_name = 'SpectralDropoutCNN_1579294275.6305485_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
         model_name = 'VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt'
-        model_path = '/'.join(['models', model_name])
+        model_path = '/workspace/' + model_name
         self.model = torch.load(model_path, map_location=torch.device('cpu'))
         self.model.double().to(device=torch.device('cpu'))
 
