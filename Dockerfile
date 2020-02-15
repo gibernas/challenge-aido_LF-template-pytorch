@@ -35,7 +35,7 @@ COPY VanillaCNN_1579294019.6894116_lr_0.001_bs_16_dataset_sim_totepo_200final.pt
 ########################################################################################################################
 COPY action_invariance.py /workspace
 COPY model.py /workspace
-COPY ConvSkip_tmp.pth /workspace
+COPY ConvSkip.pth /workspace
 COPY networks.py /workspace
 COPY latest_net_G.pth /workspace
 ########################################################################################################################
