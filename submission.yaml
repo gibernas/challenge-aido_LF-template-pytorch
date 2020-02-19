@@ -4,7 +4,7 @@
 # conventions + format
 protocol: aido2_db18_agent-z2
 challenge: [gb-eV,gb-eD,gb-eI,gb-eDI]
-user-label: "04_aI"
+user-label: "04_aDI"
 user-payload: {}
 description: |
-    aD
+    aDI
