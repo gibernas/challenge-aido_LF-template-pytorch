@@ -28,8 +28,8 @@ class TrimWrapper:
     def estimate_trim(self, x):
         # x = [delta_phi, u_l, u_r]
         # Remove data when DB accelerates
-        x = x[30:]
-
+        x = x[10:]
+        x = np.array(x)
         # Remove data when there is no delta angle
         mask = x[:, 0] != 0
         x = x[mask]
@@ -53,7 +53,7 @@ class TrimWrapper:
 
         # Compute average over samples
         t_est = np.mean(t)
-
+        self.trim_est = t_est
         return t_est
 
     def get_delta_phi(self, img0,  img1):
